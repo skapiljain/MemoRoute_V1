@@ -1,0 +1,29 @@
+{
+  "name": "memoroute",
+  "private": true,
+  "version": "0.1.0",
+  "description": "MemoRoute — Feynman learning platform monorepo",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@lector/web",
+    "dev:web": "npm run dev --workspace=@lector/web",
+    "dev:api": "npm run dev --workspace=@lector/api",
+    "dev:all": "concurrently -n web,api -c cyan,magenta \"npm run dev:web\" \"npm run dev:api\"",
+    "build": "npm run build --workspaces --if-present",
+    "build:web": "npm run build --workspace=@lector/web",
+    "build:api": "npm run build --workspace=@lector/api",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspace=@lector/api",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "migrate:up": "npm run migrate:up --workspace=@lector/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
