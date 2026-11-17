@@ -19,19 +19,23 @@ const envSchema = z.object({
   S3_SECRET_KEY: z.string().optional(),
   S3_BUCKET: z.string().default('lector-audio'),
   S3_REGION: z.string().default('us-east-1'),
-  LLM_PROVIDER: z.enum(['mock', 'openai', 'gemini', 'claude']).default('mock'),
+  LLM_PROVIDER: z.enum(['openai', 'gemini', 'claude']).default('openai'),
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_BASE_URL: z.string().optional(),
   OPENAI_MODEL: z.string().optional(),
   OPENAI_EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
-  EMBEDDING_PROVIDER: z.enum(['openai', 'mock']).default('openai'),
+  EMBEDDING_PROVIDER: z.enum(['openai']).default('openai'),
   EMBEDDING_ENABLED: z
     .enum(['true', 'false'])
     .default('true')
     .transform((v) => v === 'true'),
   GEMINI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
-  STT_PROVIDER: z.enum(['mock', 'whisper', 'deepgram']).default('mock'),
+  STT_PROVIDER: z.enum(['whisper']).default('whisper'),
+  STT_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+  WHISPER_MODEL: z.string().default('whisper-1'),
+  STT_LANGUAGE: z.string().optional(),
+  AUDIO_DIR: z.string().optional(),
   GROQ_API_KEY: z.string().optional(),
   GROQ_STT_MODEL: z.enum(['whisper-large-v3-turbo', 'whisper-large-v3']).default('whisper-large-v3-turbo'),
   GROQ_STT_BASE_URL: z.string().url().default('https://api.groq.com/openai/v1'),
@@ -49,6 +53,17 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((v) => v === 'true'),
+  FLAG_TRANSCRIPT_CONFIRM: z.string().optional().transform((v) => v === 'true'),
+  FLAG_TRANSCRIPT_CONFIRM_PERCENT: z.coerce.number().min(0).max(100).default(0),
+  FLAG_CHUNKED_RAG: z.string().optional().transform((v) => v === 'true'),
+  FLAG_CHUNKED_RAG_PERCENT: z.coerce.number().min(0).max(100).default(0),
+  FLAG_GROUNDED_EVALUATOR: z.string().optional().transform((v) => v === 'true'),
+  FLAG_GROUNDED_EVALUATOR_PERCENT: z.coerce.number().min(0).max(100).default(0),
+  FLAG_CONCEPT_RETENTION: z.string().optional().transform((v) => v === 'true'),
+  FLAG_CONCEPT_RETENTION_PERCENT: z.coerce.number().min(0).max(100).default(0),
+  FLAG_ASYNC_PIPELINE: z.string().optional().transform((v) => v === 'true'),
+  FLAG_ASYNC_PIPELINE_PERCENT: z.coerce.number().min(0).max(100).default(0),
+  RUN_LIVE_TESTS: z.string().optional().transform((v) => v === 'true'),
   ENABLE_WORKERS: z
     .enum(['true', 'false'])
     .default('false')

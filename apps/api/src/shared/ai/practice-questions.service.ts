@@ -95,7 +95,7 @@ export async function generatePracticeQuestionsFromContent(
   const count = options?.count ?? 4
   const existingQuestions = options?.existingQuestions ?? []
 
-  if (env.NODE_ENV === 'test' || env.LLM_PROVIDER === 'mock') {
+  if (env.NODE_ENV === 'test') {
     return buildMockQuestions(title, count)
   }
 

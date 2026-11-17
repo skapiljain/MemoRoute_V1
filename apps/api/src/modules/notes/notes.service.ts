@@ -81,7 +81,7 @@ async function savePracticeQuestions(
 }
 
 async function syncNoteEmbedding(note: NoteDocument): Promise<void> {
-  if (!env.EMBEDDING_ENABLED && env.NODE_ENV !== 'test') {
+  if (!env.EMBEDDING_ENABLED) {
     return
   }
 

@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto'
 import { env } from '../../config/env.js'
 import { cosineSimilarity } from '../utils/cosine-similarity.js'
 
@@ -8,23 +7,8 @@ export function buildNoteEmbeddingText(title: string, subject: string, content: 
   return `Subject: ${subject}\nTitle: ${title}\n\n${content}`.trim().slice(0, 8000)
 }
 
-function normalizeVector(values: number[]): number[] {
-  const norm = Math.sqrt(values.reduce((sum, value) => sum + value * value, 0))
-  if (norm === 0) return values
-  return values.map((value) => value / norm)
-}
-
-function mockEmbed(text: string): number[] {
-  const hash = createHash('sha256').update(text).digest()
-  const values = Array.from({ length: EMBEDDING_DIMENSIONS }, (_, index) => {
-    const byte = hash[index % hash.length] ?? 0
-    return (byte / 255) * 2 - 1
-  })
-  return normalizeVector(values)
-}
-
 async function openAiEmbed(text: string): Promise<number[]> {
-  const apiKey = env.OPENAI_API_KEY
+  const apiKey = env.OPENAI_API_KEY || process.env.OPENAI_API_KEY
   if (!apiKey) {
     throw new Error('OPENAI_API_KEY is required for semantic search embeddings')
   }
@@ -65,12 +49,8 @@ export async function embedText(text: string): Promise<number[]> {
     return new Array(EMBEDDING_DIMENSIONS).fill(0)
   }
 
-  if (env.NODE_ENV === 'test' || env.EMBEDDING_PROVIDER === 'mock') {
-    return mockEmbed(trimmed)
-  }
-
   if (!env.EMBEDDING_ENABLED) {
-    return mockEmbed(trimmed)
+    return new Array(EMBEDDING_DIMENSIONS).fill(0)
   }
 
   return openAiEmbed(trimmed)

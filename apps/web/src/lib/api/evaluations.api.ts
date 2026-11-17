@@ -1,4 +1,9 @@
 import { api, authenticatedFetch, ApiError } from './client'
+import { extensionForRecordingMime } from '../audio/recording-format'
+
+function extensionForBlob(blob: Blob): string {
+  return extensionForRecordingMime(blob.type || 'audio/webm')
+}
 
 export interface SubConceptScore {
   name: string
@@ -87,7 +92,10 @@ export async function submitVoiceEvaluation(input: {
   const formData = new FormData()
   formData.append('noteId', input.noteId)
   if (input.questionId) formData.append('questionId', input.questionId)
-  formData.append('audioFile', input.audioBlob, input.filename ?? 'explanation.webm')
+  const ext = extensionForBlob(input.audioBlob)
+  const baseName = input.filename ? input.filename.replace(/\.[^/.]+$/, '') : 'explanation'
+  const uploadFilename = `${baseName}.${ext}`
+  formData.append('audioFile', input.audioBlob, uploadFilename)
   if (input.selfRating != null) {
     formData.append('selfRating', String(input.selfRating))
   }

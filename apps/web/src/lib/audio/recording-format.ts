@@ -6,7 +6,6 @@ const RECORDING_CANDIDATES = [
   'audio/webm',
   'audio/mp4',
   'audio/ogg;codecs=opus',
-  'audio/ogg',
 ]
 
 export function selectRecordingMimeType(): string | null {
@@ -19,7 +18,8 @@ export function selectRecordingMimeType(): string | null {
 
 export function extensionForRecordingMime(mimeType: string): string {
   const base = mimeType.split(';')[0]?.toLowerCase() ?? ''
-  if (base.includes('mp4') || base.includes('m4a')) return 'm4a'
+  if (base.includes('mp4')) return 'mp4'
+  if (base.includes('m4a')) return 'm4a'
   if (base.includes('ogg') || base.includes('opus')) return 'ogg'
   if (base.includes('wav')) return 'wav'
   if (base.includes('mpeg') || base.includes('mp3')) return 'mp3'

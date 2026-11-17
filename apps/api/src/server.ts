@@ -1,9 +1,14 @@
 import { buildApp } from './app.js'
 import { env } from './config/env.js'
 import { connectDatabase } from './db/connection.js'
+import { createLLMProvider, createSTTProvider } from './shared/ports/index.js'
 import { startWorkerScheduler } from './workers/scheduler.js'
 
 async function start(): Promise<void> {
+  // Validate external AI provider configs early — fails fast if required API keys are missing
+  createSTTProvider()
+  createLLMProvider()
+
   await connectDatabase()
 
   const app = await buildApp()

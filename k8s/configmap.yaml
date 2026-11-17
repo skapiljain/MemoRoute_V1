@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mindecho-config
+  namespace: mindecho
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  HOST: "0.0.0.0"
+  MONGODB_URI: "mongodb://mindecho-mongodb:27017/lector"
+  REDIS_URL: "redis://mindecho-redis:6379"
+  LLM_PROVIDER: "openai"
+  STT_PROVIDER: "whisper"
+  WHISPER_MODEL: "whisper-1"
+  STT_TIMEOUT_MS: "30000"

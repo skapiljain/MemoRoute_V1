@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mindecho-api
+  namespace: mindecho
+  labels:
+    app: mindecho-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mindecho-api
+  template:
+    metadata:
+      labels:
+        app: mindecho-api
+    spec:
+      containers:
+        - name: api
+          image: your-dockerhub-user/mindecho-api:v0.1.0
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: mindecho-config
+            - secretRef:
+                name: mindecho-secrets
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mindecho-api
+  namespace: mindecho
+spec:
+  selector:
+    app: mindecho-api
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

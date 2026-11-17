@@ -1,19 +1,14 @@
 services:
-  mongodb:
-    image: mongo:7
-    container_name: lector-mongodb
+  atlas-local:
+    image: mongodb/mongodb-atlas-local:latest
+    container_name: lector-atlas-local
     restart: unless-stopped
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_DATABASE: lector
+      - MONGODB_INITDB_DATABASE=lector
     volumes:
-      - mongodb_data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - atlas_data:/data/db
 
   redis:
     image: redis:7-alpine
@@ -29,28 +24,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # MinIO Hub images were removed; pgsty/silo is an S3-compatible MinIO fork
-  # that keeps MINIO_* env vars and the same API for local development.
-  minio:
-    image: pgsty/silo:latest
-    container_name: lector-minio
-    restart: unless-stopped
-    command: server /data --console-address ":9001"
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    environment:
-      MINIO_ROOT_USER: lector
-      MINIO_ROOT_PASSWORD: lector_dev_secret
-    volumes:
-      - minio_data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 volumes:
-  mongodb_data:
+  atlas_data:
   redis_data:
-  minio_data:

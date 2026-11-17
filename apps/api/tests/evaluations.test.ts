@@ -1,7 +1,9 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { FastifyInstance } from 'fastify'
 import { buildApp } from '../src/app.js'
+import { PipelineRun } from '../src/models/PipelineRun.js'
 import { submitFeynmanEvaluation } from '../src/modules/evaluations/evaluations.service.js'
+import * as ports from '../src/shared/ports/index.js'
 import { registerTestUser } from './helpers/auth.js'
 import { createTestNote } from './helpers/notes.js'
 
@@ -14,6 +16,35 @@ describe('Evaluations API (Phase 4)', () => {
 
   afterAll(async () => {
     await app.close()
+  })
+
+  beforeEach(() => {
+    if (process.env.RUN_LIVE_TESTS !== 'true') {
+      vi.spyOn(ports, 'createSTTProvider').mockReturnValue({
+        transcribe: vi.fn(async () => 'This is a test transcript from audio recording.'),
+      })
+      vi.spyOn(ports, 'createLLMProvider').mockReturnValue({
+        evaluateFeynman: vi.fn(async () => ({
+          lectorScore: 85,
+          correctness: 80,
+          clarity: 90,
+          completeness: 85,
+          feedback: {
+            strengths: ['Clear explanation'],
+            missingConcepts: [],
+            improvementTip: 'Keep practicing',
+          },
+          subConcepts: [{ name: 'Core concept', covered: true, score: 85 }],
+          misconceptions: [],
+          nextPrompt: 'Can you elaborate?',
+          retentionImpact: { intervalDays: 3, reason: 'Good recall' },
+        })),
+      })
+    }
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('evaluates a text explanation and updates note state', async () => {
@@ -40,6 +71,11 @@ describe('Evaluations API (Phase 4)', () => {
     expect(body.feedback.strengths.length).toBeGreaterThan(0)
     expect(body.updatedNoteState.practiceCount).toBe(1)
     expect(body.updatedNoteState.retentionHealth).toBeGreaterThan(0)
+
+    const run = await PipelineRun.findOne({ refId: body.evaluationId })
+    expect(run).toBeTruthy()
+    expect(run?.status).toBe('succeeded')
+    expect(run?.kind).toBe('evaluation')
   })
 
   it('evaluates a voice explanation through STT pipeline', async () => {

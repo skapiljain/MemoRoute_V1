@@ -10,7 +10,7 @@ import {
   Sparkles,
   Upload,
 } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { GlassCard } from '../components/GlassCard'
 import { VoiceExplanationRecorder, type RecordedExplanation } from '../components/explanation/VoiceExplanationRecorder'
@@ -19,7 +19,7 @@ import { ShinyButton } from '../components/ui/shiny-button'
 import { useAuth } from '../context/AuthContext'
 import { useNotes } from '../context/NotesContext'
 import { useSubscription } from '../context/SubscriptionContext'
-import { useApi } from '../lib/api/client'
+import { ApiError, useApi } from '../lib/api/client'
 import { AuthenticatedAudioPlayer } from '../components/dashboard/AuthenticatedAudioPlayer'
 import {
   submitTextEvaluation,
@@ -162,6 +162,33 @@ export function NewConcept() {
   const [inputMode, setInputMode] = useState<'voice' | 'text'>('voice')
   const [textExplanation, setTextExplanation] = useState('')
 
+  const recordingMimeRef = useRef<string>('audio/webm')
+
+  const startRecording = async (stream: MediaStream) => {
+    const candidates = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/mp4',
+      'audio/ogg;codecs=opus',
+    ]
+    const mimeType =
+      typeof MediaRecorder !== 'undefined' && typeof MediaRecorder.isTypeSupported === 'function'
+        ? candidates.find((type) => MediaRecorder.isTypeSupported(type)) ?? 'audio/webm'
+        : 'audio/webm'
+
+    recordingMimeRef.current = mimeType
+    return new MediaRecorder(stream, { mimeType })
+  }
+
+  const stopRecording = (recorder: MediaRecorder, chunks: Blob[]): Blob => {
+    const mimeType = recorder.mimeType || recordingMimeRef.current || 'audio/webm'
+    recordingMimeRef.current = mimeType
+    return new Blob(chunks, { type: mimeType })
+  }
+
+  void startRecording
+  void stopRecording
+
   const [recordedAudio, setRecordedAudio] = useState<RecordedExplanation | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [lectorQuestion, setLectorQuestion] = useState('')
@@ -177,6 +204,7 @@ export function NewConcept() {
   const [retentionImpact, setRetentionImpact] = useState<RetentionImpact | null>(null)
   const [isProceeding, setIsProceeding] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submitErrorCode, setSubmitErrorCode] = useState<string | null>(null)
   const [feedbackDetails, setFeedbackDetails] = useState<{
     strengths: string[]
     missingConcepts: string[]
@@ -358,6 +386,11 @@ export function NewConcept() {
 
     try {
       if (useApi) {
+        const audioBlob =
+          recordingMimeRef.current && recordedAudio!.blob.type !== recordingMimeRef.current
+            ? new Blob([recordedAudio!.blob], { type: recordingMimeRef.current })
+            : recordedAudio!.blob
+
         const res =
           inputMode === 'text'
             ? await submitTextEvaluation({
@@ -367,7 +400,7 @@ export function NewConcept() {
               })
             : await submitVoiceEvaluation({
                 noteId,
-                audioBlob: recordedAudio!.blob,
+                audioBlob,
                 filename: recordedAudio!.filename,
                 questionId: activeQuestionId,
               })
@@ -379,7 +412,13 @@ export function NewConcept() {
 
       setSubmitError('Enable VITE_USE_API=true and run the LECTOR API for real evaluations.')
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Evaluation failed. Please try again.')
+      if (error instanceof ApiError) {
+        setSubmitErrorCode(error.code)
+        setSubmitError(error.message)
+      } else {
+        setSubmitErrorCode(null)
+        setSubmitError(error instanceof Error ? error.message : 'Evaluation failed. Please try again.')
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -751,7 +790,12 @@ export function NewConcept() {
               {inputMode === 'voice' && (
                 <VoiceExplanationRecorder
                   topic={topicName}
-                  onAudioChange={setRecordedAudio}
+                  onAudioChange={(audio) => {
+                    setRecordedAudio(audio)
+                    if (audio?.mimeType) {
+                      recordingMimeRef.current = audio.mimeType
+                    }
+                  }}
                 />
               )}
 
@@ -774,6 +818,14 @@ export function NewConcept() {
               {submitError && (
                 <div className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/15 p-3 text-xs text-rose-200">
                   {submitError}
+                  {submitErrorCode === 'VOICE_NOT_INCLUDED' && (
+                    <p className="mt-2">
+                      <Link to="/llm-payment" className="underline font-semibold text-[#e8c89b] hover:text-white">
+                        Upgrade to Pro or Team
+                      </Link>{' '}
+                      to unlock voice evaluations.
+                    </p>
+                  )}
                 </div>
               )}
 

@@ -203,6 +203,58 @@ paths:
       responses:
         '200':
           description: Evaluation result
+        '400':
+          description: Missing required fields
+        '401':
+          description: Authentication required
+        '403':
+          description: Voice evaluation not included in subscription plan
+        '404':
+          description: Note not found
+        '413':
+          description: Audio file too large
+        '415':
+          description: Unsupported audio format
+        '422':
+          description: Audio unprocessable or no speech detected
+        '429':
+          description: Rate limit or daily usage limit exceeded
+        '502':
+          description: STT upstream error
+        '503':
+          description: STT not configured
+        '504':
+          description: STT timeout
+  /api/v1/evaluations/{id}/audio:
+    get:
+      tags: [Evaluations]
+      summary: Retrieve recorded audio for an evaluation
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Audio file bytes
+          content:
+            audio/webm:
+              schema: { type: string, format: binary }
+            audio/wav:
+              schema: { type: string, format: binary }
+            audio/mp4:
+              schema: { type: string, format: binary }
+            audio/m4a:
+              schema: { type: string, format: binary }
+            audio/ogg:
+              schema: { type: string, format: binary }
+            audio/mpeg:
+              schema: { type: string, format: binary }
+        '401':
+          description: Authentication required
+        '404':
+          description: Evaluation or audio recording not found
   /api/v1/evaluations:
     get:
       tags: [Evaluations]

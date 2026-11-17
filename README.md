@@ -293,10 +293,14 @@ LLM_PROVIDER=mock          # Options: 'mock' | 'openai' | 'gemini' | 'claude'
 OPENAI_API_KEY=your_openai_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
 
-STT_PROVIDER=mock          # Options: 'mock' | 'whisper' | 'deepgram'
+STT_PROVIDER=mock          # Options: 'mock' | 'whisper'
+WHISPER_MODEL=whisper-1
+STT_TIMEOUT_MS=30000
+STT_LANGUAGE=
 
 # Object Storage for Audio Recording Blobs
 AUDIO_STORAGE=local        # Options: 'local' | 's3'
+AUDIO_DIR=                 # Optional absolute path (defaults to apps/api/storage)
 S3_ENDPOINT=http://localhost:9000
 S3_ACCESS_KEY=lector
 S3_SECRET_KEY=lector_dev_secret

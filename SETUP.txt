@@ -1,17 +1,31 @@
-MemoRoute - Quick Setup
-=======================
+MindEcho - Quick Setup
+======================
 
-1. Unzip the folder
-2. Open terminal in the project folder
-3. Run:
+1. Open a terminal in the project root folder.
+2. Install dependencies:
    npm install
-   npm run dev
-4. Open in browser: http://localhost:43123
 
-Pages:
-  /          - Homepage
-  /login     - Login (any email/password works)
-  /dashboard - Draggable learning dashboard
-  /llm-payment - LLM payment placeholder
+3. Start local infrastructure (MongoDB, Redis, MinIO):
+   npm run docker:up
 
-Requirements: Node.js 18+ and npm
+4. Start development servers:
+   npm run dev:all
+
+   - Web App: http://localhost:45002
+   - API Server: http://localhost:3000
+   - API Health Check: http://localhost:3000/api/v1/health
+
+5. Authenticate:
+   Navigate to /login. Register a new user account with a valid email and a password
+   of at least 8 characters, or sign in with existing credentials.
+
+Available Pages:
+  /             - Homepage & Overview
+  /login        - Authentication (Register / Sign In)
+  /dashboard    - Retention Health matrix & practice queue
+  /subjects     - Notion-style study notes workspace
+  /concept/new  - Feynman Studio (voice & text active recall evaluation)
+  /calendar     - Adaptive Spaced Repetition calendar (Exam & Skill modes)
+  /llm-payment  - Subscription plans & upgrades (Pro / Team required for voice)
+
+Requirements: Node.js 20+ and npm
