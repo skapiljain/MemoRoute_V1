@@ -181,7 +181,7 @@ export function StudentDashboard() {
             <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Hi, {user?.name ?? 'Student'}.</h1>
             <p className="mt-2 text-sm text-white/55">A little recall today goes a long way.</p>
           </div>
-          {isDemo && <span className="w-fit rounded-full border border-[#e8c89b]/25 bg-[#e8c89b]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#e8c89b]">Hackathon demo</span>}
+          {isDemo && <span className="w-fit rounded-full border border-[#e8c89b]/25 bg-[#e8c89b]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#e8c89b]">Demo</span>}
         </motion.section>
 
         <section className="mb-5 grid gap-4 sm:grid-cols-2">
