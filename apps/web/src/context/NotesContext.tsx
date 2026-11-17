@@ -147,20 +147,61 @@ const NOTES_STORAGE_KEY = 'memoroute_notion_notes'
 const EXPLANATIONS_STORAGE_KEY = 'memoroute_practice_explanations'
 const DATES_STORAGE_KEY = 'memoroute_important_dates'
 
+function dateAfterDays(days: number): string {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return date.toISOString().slice(0, 10)
+}
+
 const DEFAULT_NOTES: NoteItem[] = [
   {
     id: 'note-1',
-    title: 'Binary Search Trees & Traversal',
+    title: 'Binary Search Trees',
     subject: 'Computer Science',
     icon: 'code',
-    content: `# Binary Search Trees (BST)\n\nA Binary Search Tree is a node-based binary tree data structure which has the following properties:\n- The left subtree of a node contains only nodes with keys lesser than the node's key.\n- The right subtree of a node contains only nodes with keys greater than the node's key.\n- The left and right subtree each must also be a binary search tree.`,
-    createdAt: '2026-09-10',
-    updatedAt: '2026-09-17',
+    content: `# Binary Search Trees (BST)\n\nA Binary Search Tree is a node-based binary tree data structure. The left subtree contains smaller keys, while the right subtree contains larger keys. Each subtree follows the same rule.`,
+    createdAt: dateAfterDays(-6),
+    updatedAt: dateAfterDays(-1),
     lectorScore: 9.2,
     practiceCount: 4,
-    lastPracticed: '2026-09-17',
-    retentionHealth: 94,
-    nextReviewDate: '2026-09-20',
+    lastPracticed: dateAfterDays(-1),
+    retentionHealth: 84,
+    nextReviewDate: dateAfterDays(0),
+    practiceQuestions: [
+      { id: 'q-bst-1', question: 'Explain how a binary search tree keeps values ordered.', adopted: true, source: 'ai' },
+    ],
+  },
+  {
+    id: 'note-2',
+    title: 'Cellular Respiration',
+    subject: 'Biology',
+    icon: 'flask',
+    content: '# Cellular Respiration\n\nCells convert glucose into usable energy through glycolysis, the Krebs cycle, and oxidative phosphorylation.',
+    createdAt: dateAfterDays(-4),
+    updatedAt: dateAfterDays(-2),
+    lectorScore: 8.7,
+    practiceCount: 2,
+    lastPracticed: dateAfterDays(-2),
+    retentionHealth: 76,
+    nextReviewDate: dateAfterDays(0),
+    practiceQuestions: [
+      { id: 'q-cell-1', question: 'How does cellular respiration turn glucose into energy a cell can use?', adopted: true, source: 'ai' },
+    ],
+  },
+  {
+    id: 'note-3',
+    title: 'Linear Equations',
+    subject: 'Mathematics',
+    icon: 'sigma',
+    content: '# Linear Equations\n\nA linear equation describes a relationship where the highest power of each variable is one.',
+    createdAt: dateAfterDays(-2),
+    updatedAt: dateAfterDays(-2),
+    practiceCount: 1,
+    retentionHealth: 72,
+    nextReviewDate: dateAfterDays(2),
+    practiceQuestions: [
+      { id: 'q-linear-1', question: 'What makes an equation linear, and how can you solve one?', adopted: true, source: 'ai' },
+    ],
   },
 ]
 
@@ -174,11 +215,12 @@ function todayDateStr(): string {
 }
 
 export function NotesProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth()
-  const apiMode = useApi && isAuthenticated
+  const { isAuthenticated, isDemo } = useAuth()
+  const apiMode = useApi && isAuthenticated && !isDemo
+  const shouldPersistLocal = !useApi || isDemo
 
   const [notes, setNotes] = useState<NoteItem[]>(() => {
-    if (useApi) return []
+    if (useApi && !isDemo) return []
     try {
       const saved = localStorage.getItem(NOTES_STORAGE_KEY)
       return saved ? (JSON.parse(saved) as NoteItem[]) : DEFAULT_NOTES
@@ -188,7 +230,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   })
 
   const [explanations, setExplanations] = useState<PracticeExplanation[]>(() => {
-    if (useApi) return []
+    if (useApi && !isDemo) return []
     try {
       const saved = localStorage.getItem(EXPLANATIONS_STORAGE_KEY)
       return saved ? (JSON.parse(saved) as PracticeExplanation[]) : DEFAULT_EXPLANATIONS
@@ -198,7 +240,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   })
 
   const [importantDates, setImportantDates] = useState<ImportantDateItem[]>(() => {
-    if (useApi) return []
+    if (useApi && !isDemo) return []
     try {
       const saved = localStorage.getItem(DATES_STORAGE_KEY)
       return saved ? (JSON.parse(saved) as ImportantDateItem[]) : DEFAULT_IMPORTANT_DATES
@@ -208,7 +250,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   })
 
   const [studyMode, setStudyModeState] = useState<StudyModeType>(() => {
-    if (useApi) return 'exam'
+    if (useApi && !isDemo) return 'exam'
     try {
       const saved = localStorage.getItem('memoroute_study_mode')
       return saved ? (saved as StudyModeType) : 'exam'
@@ -218,7 +260,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   })
 
   const [examTargetDate, setExamTargetDate] = useState<string>(() => {
-    if (useApi) return ''
+    if (useApi && !isDemo) return ''
     try {
       return localStorage.getItem('memoroute_exam_target_date') || '2026-09-25'
     } catch {
@@ -227,7 +269,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   })
 
   const [examTitle, setExamTitle] = useState<string>(() => {
-    if (useApi) return ''
+    if (useApi && !isDemo) return ''
     try {
       return localStorage.getItem('memoroute_exam_title') || 'Final CS Midterm Exam'
     } catch {
@@ -288,34 +330,60 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   }, [apiMode, refreshFromApi])
 
   useEffect(() => {
-    if (apiMode) return
+    if (!useApi) return
+    if (!isDemo) {
+      setNotes([])
+      setExplanations([])
+      setImportantDates([])
+      return
+    }
+
+    const read = <T,>(key: string, fallback: T): T => {
+      try {
+        const raw = localStorage.getItem(key)
+        return raw ? (JSON.parse(raw) as T) : fallback
+      } catch {
+        return fallback
+      }
+    }
+    const storedNotes = read<NoteItem[]>(NOTES_STORAGE_KEY, [])
+    setNotes(storedNotes.length ? storedNotes : DEFAULT_NOTES)
+    setExplanations(read(EXPLANATIONS_STORAGE_KEY, DEFAULT_EXPLANATIONS))
+    setImportantDates(read(DATES_STORAGE_KEY, DEFAULT_IMPORTANT_DATES))
+    setStudyModeState(read('memoroute_study_mode', 'exam'))
+    setExamTargetDate(read('memoroute_exam_target_date', defaultExamTargetDate()))
+    setExamTitle(read('memoroute_exam_title', 'Final Exam'))
+  }, [isDemo])
+
+  useEffect(() => {
+    if (!shouldPersistLocal) return
     localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes))
-  }, [notes, apiMode])
+  }, [notes, shouldPersistLocal])
 
   useEffect(() => {
-    if (apiMode) return
+    if (!shouldPersistLocal) return
     localStorage.setItem(EXPLANATIONS_STORAGE_KEY, JSON.stringify(explanations))
-  }, [explanations, apiMode])
+  }, [explanations, shouldPersistLocal])
 
   useEffect(() => {
-    if (apiMode) return
+    if (!shouldPersistLocal) return
     localStorage.setItem(DATES_STORAGE_KEY, JSON.stringify(importantDates))
-  }, [importantDates, apiMode])
+  }, [importantDates, shouldPersistLocal])
 
   useEffect(() => {
-    if (apiMode) return
+    if (!shouldPersistLocal) return
     localStorage.setItem('memoroute_study_mode', studyMode)
-  }, [studyMode, apiMode])
+  }, [studyMode, shouldPersistLocal])
 
   useEffect(() => {
-    if (apiMode) return
+    if (!shouldPersistLocal) return
     localStorage.setItem('memoroute_exam_target_date', examTargetDate)
-  }, [examTargetDate, apiMode])
+  }, [examTargetDate, shouldPersistLocal])
 
   useEffect(() => {
-    if (apiMode) return
+    if (!shouldPersistLocal) return
     localStorage.setItem('memoroute_exam_title', examTitle)
-  }, [examTitle, apiMode])
+  }, [examTitle, shouldPersistLocal])
 
   const setStudyMode = useCallback(
     async (mode: StudyModeType, date?: string, title?: string) => {

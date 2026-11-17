@@ -26,6 +26,18 @@ const NotionWorkspace = lazy(() =>
 const AdaptiveCalendar = lazy(() =>
   import('./pages/AdaptiveCalendar').then((m) => ({ default: m.AdaptiveCalendar })),
 )
+const StudentDashboard = lazy(() =>
+  import('./pages/StudentFlow').then((m) => ({ default: m.StudentDashboard })),
+)
+const RevisionSubjectsPage = lazy(() =>
+  import('./pages/StudentFlow').then((m) => ({ default: m.RevisionSubjectsPage })),
+)
+const NewTopicPage = lazy(() =>
+  import('./pages/StudentFlow').then((m) => ({ default: m.NewTopicPage })),
+)
+const PracticeQuestionPage = lazy(() =>
+  import('./pages/StudentFlow').then((m) => ({ default: m.PracticeQuestionPage })),
+)
 
 function LazyPage({ children }: { children: ReactNode }) {
   return (
@@ -46,6 +58,22 @@ function AppRoutes() {
     <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route
+          path="/student"
+          element={<LazyPage><StudentDashboard /></LazyPage>}
+        />
+        <Route
+          path="/revisions"
+          element={<LazyPage><RevisionSubjectsPage /></LazyPage>}
+        />
+        <Route
+          path="/topics/new"
+          element={<LazyPage><NewTopicPage /></LazyPage>}
+        />
+        <Route
+          path="/practice/:noteId"
+          element={<LazyPage><PracticeQuestionPage /></LazyPage>}
+        />
         <Route
           path="/dashboard"
           element={
