@@ -5,8 +5,8 @@ pipeline {
         NODE_ENV = 'test'
         CI = 'true'
         DOCKER_REGISTRY = 'docker.io'
-        DOCKER_IMAGE_API = 'your-dockerhub-user/mindecho-api'
-        DOCKER_IMAGE_WEB = 'your-dockerhub-user/mindecho-web'
+        DOCKER_IMAGE_API = 'captainkj12/mindecho-api'
+        DOCKER_IMAGE_WEB = 'captainkj12/mindecho-web'
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
@@ -38,8 +38,13 @@ pipeline {
 
         stage('Unit & Integration Tests') {
             steps {
-                echo 'Executing Vitest test suite...'
+                echo 'Executing Vitest test suite (in-memory MongoDB)...'
                 sh 'npm test'
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: '**/test-results/*.xml'
+                }
             }
         }
 
@@ -52,6 +57,12 @@ pipeline {
         }
 
         stage('Build Docker Images') {
+            when {
+                anyOf {
+                    branch 'develop'
+                    branch 'main'
+                }
+            }
             steps {
                 script {
                     echo "Building Docker images with tag ${IMAGE_TAG}..."
@@ -63,7 +74,7 @@ pipeline {
 
         stage('Push Docker Images') {
             when {
-                branch 'main'
+                branch 'develop'
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
@@ -84,7 +95,6 @@ pipeline {
                 echo 'Applying Kubernetes manifests...'
                 sh 'kubectl apply -f k8s/namespace.yaml'
                 sh 'kubectl apply -f k8s/configmap.yaml'
-                sh 'kubectl apply -f k8s/secrets.yaml'
                 sh "kubectl set image deployment/mindecho-api api=${DOCKER_IMAGE_API}:${IMAGE_TAG} -n mindecho"
                 sh "kubectl set image deployment/mindecho-web web=${DOCKER_IMAGE_WEB}:${IMAGE_TAG} -n mindecho"
                 sh 'kubectl apply -f k8s/ingress.yaml'
