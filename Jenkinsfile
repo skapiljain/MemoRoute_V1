@@ -25,6 +25,7 @@ pipeline {
             steps {
                 echo 'Installing monorepo dependencies...'
                 sh 'npm ci'
+                sh 'npm install --os=linux --cpu=x64 @rolldown/binding-linux-x64-gnu --no-save'
             }
         }
 
@@ -39,7 +40,7 @@ pipeline {
         stage('Unit & Integration Tests') {
             steps {
                 echo 'Executing Vitest test suite (in-memory MongoDB)...'
-                sh 'npm test'
+                sh 'npm test -- --reporter=default --reporter=junit --outputFile=test-results/junit.xml'
             }
             post {
                 always {
