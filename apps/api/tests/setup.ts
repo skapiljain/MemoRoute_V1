@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest'
 import mongoose from 'mongoose'
+import { MongoMemoryServer } from 'mongodb-memory-server'
 
 process.env.NODE_ENV = 'test'
 process.env.JWT_SECRET = 'test-secret-min-8-chars-long'
@@ -15,10 +16,14 @@ process.env.EMBEDDING_PROVIDER = 'openai'
 process.env.EMBEDDING_ENABLED = process.env.RUN_LIVE_TESTS === 'true' ? 'true' : 'false'
 process.env.FEATURE_BILLING = 'true'
 process.env.FEATURE_VOICE_EVAL = 'true'
-process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/lector_test'
+
+let mongod: MongoMemoryServer
 
 beforeAll(async () => {
-  await mongoose.connect(process.env.MONGODB_URI!)
+  mongod = await MongoMemoryServer.create()
+  const uri = mongod.getUri()
+  process.env.MONGODB_URI = uri
+  await mongoose.connect(uri)
 }, 60_000)
 
 beforeEach(async () => {
@@ -56,4 +61,5 @@ afterEach(async () => {
 
 afterAll(async () => {
   await mongoose.disconnect()
+  await mongod.stop()
 })
