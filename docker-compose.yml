@@ -24,43 +24,6 @@ services:
       timeout: 5s
       retries: 5
 
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
-    container_name: mindecho-api
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - HOST=0.0.0.0
-      - MONGODB_URI=mongodb://atlas-local:27017/lector
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=mindecho-dev-jwt-secret-key-32-chars-long
-      - LLM_PROVIDER=openai
-      - STT_PROVIDER=whisper
-      - OPENAI_API_KEY=sk-dev-placeholder-key-for-container-test
-      - CORS_ORIGINS=http://localhost:3000,http://localhost:80,http://localhost:45002
-    depends_on:
-      - atlas-local
-      - redis
-    volumes:
-      - audio_data:/app/apps/api/storage/audio
-
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile.web
-    container_name: mindecho-web
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    depends_on:
-      - api
-
 volumes:
   atlas_data:
   redis_data:
-  audio_data:

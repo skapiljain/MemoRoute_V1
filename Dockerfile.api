@@ -1,11 +1,11 @@
 # -------------------------------------------------------------
-# Stage 1: Build TypeScript source
+# Stage 1: Build
 # -------------------------------------------------------------
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy root and workspace manifests for dependency caching
+# Copy root and package manifests for clean caching
 COPY package.json package-lock.json ./
 COPY apps/api/package.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
@@ -25,33 +25,25 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-ENV NODE_ENV=production \
-    PORT=3000 \
-    HOST=0.0.0.0
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOST=0.0.0.0
 
-# Copy manifests to install production dependencies only
 COPY package.json package-lock.json ./
 COPY apps/api/package.json ./apps/api/
-COPY apps/web/package.json ./apps/web/
 
+# Install only production dependencies
 RUN npm ci --omit=dev --workspace=@lector/api
 
-# Copy compiled JavaScript output
+# Copy compiled code from builder
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/package.json ./apps/api/
 
-# Copy runtime assets: OpenAPI spec (to both paths for cwd resilience) and database migrations
-COPY --from=builder /app/apps/api/openapi ./openapi
-COPY --from=builder /app/apps/api/openapi ./apps/api/openapi
-COPY --from=builder /app/apps/api/migrations ./apps/api/migrations
-
-# Create persistent storage folder for local audio recordings and adjust ownership
+# Create persistent storage folder for audio recordings
 RUN mkdir -p /app/apps/api/storage/audio && chown -R node:node /app
 
 USER node
 
-# Set working directory to apps/api so process.cwd() resolves ./openapi/spec.yaml
-WORKDIR /app/apps/api
-
 EXPOSE 3000
 
-CMD ["node", "dist/server.js"]
+CMD ["node", "apps/api/dist/server.js"]

@@ -1,6 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { useAuth } from './context/AuthContext'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { NotesProvider } from './context/NotesContext'
 import { SubscriptionProvider } from './context/SubscriptionContext'
@@ -9,17 +8,23 @@ import { PageLoader } from './components/ui/page-loader'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
 
-const StudentDashboard = lazy(() =>
-  import('./pages/StudentFlow').then((m) => ({ default: m.StudentDashboard })),
+const Dashboard = lazy(() =>
+  import('./pages/Dashboard').then((m) => ({ default: m.Dashboard })),
 )
-const RevisionSubjectsPage = lazy(() =>
-  import('./pages/StudentFlow').then((m) => ({ default: m.RevisionSubjectsPage })),
+const EvaluationsPage = lazy(() =>
+  import('./pages/EvaluationsPage').then((m) => ({ default: m.EvaluationsPage })),
 )
-const NewTopicPage = lazy(() =>
-  import('./pages/StudentFlow').then((m) => ({ default: m.NewTopicPage })),
+const LLMPayment = lazy(() =>
+  import('./pages/LLMPayment').then((m) => ({ default: m.LLMPayment })),
 )
-const PracticeQuestionPage = lazy(() =>
-  import('./pages/StudentFlow').then((m) => ({ default: m.PracticeQuestionPage })),
+const NewConcept = lazy(() =>
+  import('./pages/NewConcept').then((m) => ({ default: m.NewConcept })),
+)
+const NotionWorkspace = lazy(() =>
+  import('./pages/NotionWorkspace').then((m) => ({ default: m.NotionWorkspace })),
+)
+const AdaptiveCalendar = lazy(() =>
+  import('./pages/AdaptiveCalendar').then((m) => ({ default: m.AdaptiveCalendar })),
 )
 
 function LazyPage({ children }: { children: ReactNode }) {
@@ -36,25 +41,75 @@ function LazyPage({ children }: { children: ReactNode }) {
   )
 }
 
-function HomeRoute() {
-  const { isAuthenticated, isLoading } = useAuth()
-  if (isLoading) {
-    return <div className="theme-page min-h-screen"><PageLoader /></div>
-  }
-  return isAuthenticated ? <Navigate to="/student" replace /> : <Home />
-}
-
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomeRoute />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/student" element={<LazyPage><StudentDashboard /></LazyPage>} />
-      <Route path="/revisions" element={<LazyPage><RevisionSubjectsPage /></LazyPage>} />
-      <Route path="/topics/new" element={<LazyPage><NewTopicPage /></LazyPage>} />
-      <Route path="/practice/:noteId" element={<LazyPage><PracticeQuestionPage /></LazyPage>} />
-      <Route path="/dashboard" element={<Navigate to="/student" replace />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/dashboard"
+          element={
+            <LazyPage>
+              <Dashboard />
+            </LazyPage>
+          }
+        />
+        <Route
+          path="/evaluations"
+          element={
+            <LazyPage>
+              <EvaluationsPage />
+            </LazyPage>
+          }
+        />
+        <Route
+          path="/llm-payment"
+          element={
+            <LazyPage>
+              <LLMPayment />
+            </LazyPage>
+          }
+        />
+        <Route
+          path="/concept/new"
+          element={
+            <LazyPage>
+              <NewConcept />
+            </LazyPage>
+          }
+        />
+        <Route
+          path="/workspace"
+          element={
+            <LazyPage>
+              <NotionWorkspace />
+            </LazyPage>
+          }
+        />
+        <Route
+          path="/subjects"
+          element={
+            <LazyPage>
+              <NotionWorkspace />
+            </LazyPage>
+          }
+        />
+        <Route
+          path="/calendar"
+          element={
+            <LazyPage>
+              <AdaptiveCalendar />
+            </LazyPage>
+          }
+        />
+        <Route
+          path="/review-due"
+          element={
+            <LazyPage>
+              <AdaptiveCalendar />
+            </LazyPage>
+          }
+        />
     </Routes>
   )
 }
