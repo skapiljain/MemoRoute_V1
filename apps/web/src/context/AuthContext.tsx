@@ -24,8 +24,10 @@ interface User {
 interface AuthContextValue {
   user: User | null
   isAuthenticated: boolean
+  isDemo: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
+  loginDemo: () => void
   register: (name: string, email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   logout: () => Promise<void>
 }
@@ -35,6 +37,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 const STORAGE_KEY = 'memoroute_auth'
 const TOKEN_KEY = 'memoroute_token'
 const REFRESH_KEY = 'memoroute_refresh_token'
+const DEMO_KEY = 'memoroute_demo_mode'
 
 function loadUser(): User | null {
   try {
@@ -58,11 +61,19 @@ function clearSession() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => (useApi ? null : loadUser()))
+  const [isDemo, setIsDemo] = useState(() => localStorage.getItem(DEMO_KEY) === 'true')
+  const [user, setUser] = useState<User | null>(() => (useApi && localStorage.getItem(DEMO_KEY) !== 'true' ? null : loadUser()))
   const [isLoading, setIsLoading] = useState(useApi)
 
   useEffect(() => {
     if (!useApi) return
+
+    if (localStorage.getItem(DEMO_KEY) === 'true') {
+      setUser(loadUser())
+      setIsDemo(true)
+      setIsLoading(false)
+      return
+    }
 
     const token = localStorage.getItem(TOKEN_KEY)
     if (!token) {
@@ -94,6 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: email.trim(),
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser))
+      localStorage.removeItem(DEMO_KEY)
+      setIsDemo(false)
       setUser(nextUser)
       return { ok: true as const }
     }
@@ -105,6 +118,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         response.token,
         response.refreshToken,
       )
+      localStorage.removeItem(DEMO_KEY)
+      setIsDemo(false)
       setUser({ id: response.user.id, name: response.user.name, email: response.user.email })
       return { ok: true as const }
     } catch (error) {
@@ -112,6 +127,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error instanceof Error && error.message ? error.message : 'Invalid email or password.'
       return { ok: false as const, error: message }
     }
+  }, [])
+
+  const loginDemo = useCallback(() => {
+    const demoUser = { name: 'Alex Morgan', email: 'alex@memoroute.demo' }
+    clearSession()
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(demoUser))
+    localStorage.setItem(DEMO_KEY, 'true')
+    setIsDemo(true)
+    setUser(demoUser)
+    setIsLoading(false)
   }, [])
 
   const register = useCallback(async (name: string, email: string, password: string) => {
@@ -133,6 +158,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         response.token,
         response.refreshToken,
       )
+      localStorage.removeItem(DEMO_KEY)
+      setIsDemo(false)
       setUser({ id: response.user.id, name: response.user.name, email: response.user.email })
       return { ok: true as const }
     } catch (error) {
@@ -152,6 +179,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
     clearSession()
+    localStorage.removeItem(DEMO_KEY)
+    setIsDemo(false)
     setUser(null)
   }, [])
 
@@ -159,12 +188,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       isAuthenticated: Boolean(user),
+      isDemo,
       isLoading,
       login,
+      loginDemo,
       register,
       logout,
     }),
-    [user, isLoading, login, register, logout],
+    [user, isDemo, isLoading, login, loginDemo, register, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

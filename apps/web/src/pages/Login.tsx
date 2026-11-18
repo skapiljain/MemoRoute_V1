@@ -1,11 +1,10 @@
 import { motion } from 'framer-motion'
-import { Brain, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
+import { ArrowRight, Brain, Eye, EyeOff, Lock, Mail, Sparkles, User } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { ShinyButton } from '../components/ui/shiny-button'
-import { useApi } from '../lib/api/client'
 
 export function Login() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -15,7 +14,7 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const { login, register } = useAuth()
+  const { login, loginDemo, register } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,7 +33,7 @@ export function Login() {
     setSubmitting(false)
 
     if (result.ok) {
-      navigate('/dashboard', { replace: true })
+      navigate('/student', { replace: true })
     } else {
       setError(result.error ?? 'Something went wrong. Please try again.')
     }
@@ -72,6 +71,35 @@ export function Login() {
             ? 'Sign in to continue your learning journey'
             : 'Register to sync notes, scores, and your adaptive calendar'}
         </p>
+
+        {mode === 'login' && (
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={() => {
+                loginDemo()
+                navigate('/student', { replace: true })
+              }}
+              className="group flex w-full items-center justify-between rounded-2xl border border-[#e8c89b]/40 bg-[#e8c89b]/12 px-5 py-4 text-left transition hover:border-[#e8c89b]/70 hover:bg-[#e8c89b]/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8c89b]"
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e8c89b]/20 text-[#e8c89b]">
+                  <Sparkles className="h-5 w-5" />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-white">Demo login</span>
+                  <span className="mt-0.5 block text-xs text-white/55">Continue as Alex Morgan · no account needed</span>
+                </span>
+              </span>
+              <ArrowRight className="h-4 w-4 text-[#e8c89b] transition-transform group-hover:translate-x-1" />
+            </button>
+            <div className="my-5 flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-white/35">
+              <span className="h-px flex-1 bg-white/10" />
+              <span>or sign in</span>
+              <span className="h-px flex-1 bg-white/10" />
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {mode === 'register' && (
@@ -148,12 +176,6 @@ export function Login() {
         >
           {mode === 'login' ? 'Need an account? Register' : 'Already have an account? Sign in'}
         </button>
-
-        {!useApi && (
-          <p className="mt-4 text-center text-xs text-white/45">
-            Demo mode — set VITE_USE_API=true to connect to the LECTOR API.
-          </p>
-        )}
 
         <Link
           to="/"
