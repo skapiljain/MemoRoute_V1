@@ -25,6 +25,7 @@ services:
       retries: 5
 
   api:
+    image: captainkj12/mindecho-api:v0.1.0
     build:
       context: .
       dockerfile: Dockerfile.api
@@ -38,10 +39,10 @@ services:
       - HOST=0.0.0.0
       - MONGODB_URI=mongodb://atlas-local:27017/lector
       - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=mindecho-dev-jwt-secret-key-32-chars-long
+      - JWT_SECRET=${JWT_SECRET:-mindecho-dev-jwt-secret-key-32-chars-long}
       - LLM_PROVIDER=openai
       - STT_PROVIDER=whisper
-      - OPENAI_API_KEY=sk-dev-placeholder-key-for-container-test
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-dev-placeholder-key-for-container-test}
       - CORS_ORIGINS=http://localhost:3000,http://localhost:80,http://localhost:45002
     depends_on:
       - atlas-local
@@ -50,6 +51,7 @@ services:
       - audio_data:/app/apps/api/storage/audio
 
   web:
+    image: captainkj12/mindecho-web:v0.1.0
     build:
       context: .
       dockerfile: Dockerfile.web
