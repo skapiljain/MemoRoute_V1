@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mindecho-redis
+  namespace: mindecho
+  labels:
+    app: mindecho-redis
+    tier: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mindecho-redis
+  template:
+    metadata:
+      labels:
+        app: mindecho-redis
+        tier: cache
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mindecho-redis
+  namespace: mindecho
+  labels:
+    app: mindecho-redis
+spec:
+  selector:
+    app: mindecho-redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379

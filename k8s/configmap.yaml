@@ -13,3 +13,4 @@ data:
   STT_PROVIDER: "whisper"
   WHISPER_MODEL: "whisper-1"
   STT_TIMEOUT_MS: "30000"
+  CORS_ORIGINS: "http://localhost:3000,http://localhost:80,http://localhost"

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mindecho-mongodb
+  namespace: mindecho
+  labels:
+    app: mindecho-mongodb
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mindecho-mongodb
+  template:
+    metadata:
+      labels:
+        app: mindecho-mongodb
+        tier: database
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:7.0
+          ports:
+            - containerPort: 27017
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+      volumes:
+        - name: mongodb-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mindecho-mongodb
+  namespace: mindecho
+  labels:
+    app: mindecho-mongodb
+spec:
+  selector:
+    app: mindecho-mongodb
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
