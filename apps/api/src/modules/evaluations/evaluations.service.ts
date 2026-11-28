@@ -5,6 +5,7 @@ import { Note, type NoteDocument } from '../../models/Note.js'
 import { PipelineRun, runStage } from '../../models/PipelineRun.js'
 import { User, type UserDocument } from '../../models/User.js'
 import { createLLMProvider, createSTTProvider } from '../../shared/ports/index.js'
+import { applyLectorCalibration } from '../../shared/ports/lector-calibration.service.js'
 import { SttError } from '../../shared/ports/whisper-stt-provider.js'
 import { deleteAudioFile, readAudioFile, saveAudioFile } from '../../shared/storage/audio-storage.js'
 import { ApiError } from '../../shared/utils/api-error.js'
@@ -164,11 +165,12 @@ export async function submitFeynmanEvaluation(
 
     const llm = createLLMProvider()
     const result = await runStage(pipelineRun._id, 'llm_evaluation', async (setMeta) => {
-      const evalResult = await llm.evaluateFeynman({
+      const assessment = await llm.evaluateFeynman({
         sourceContent: note.content,
         userExplanation: transcript!,
         topic: note.title,
       })
+      const evalResult = applyLectorCalibration(assessment, transcript!)
       setMeta({
         lectorScore: evalResult.lectorScore,
         correctness: evalResult.correctness,
@@ -202,6 +204,16 @@ export async function submitFeynmanEvaluation(
       },
       calendarContext,
     )
+    const relevantDates = [
+      ...(calendarContext.studyMode === 'exam' && calendarContext.examTargetDate ? ['exam date'] : []),
+      ...(calendarContext.importantDateDeadline ? ['important date'] : []),
+    ]
+    const retentionImpact = {
+      intervalDays: reviewUpdate.interval,
+      reason: `Calculated from your calibrated score and review history${
+        relevantDates.length ? `, with your ${relevantDates.join(' and ')} considered` : ''
+      }.`,
+    }
 
     await runStage(pipelineRun._id, 'persistence', async () => {
       await Evaluation.create({
@@ -219,7 +231,7 @@ export async function submitFeynmanEvaluation(
         subConcepts: result.subConcepts,
         misconceptions: result.misconceptions,
         nextPrompt: result.nextPrompt,
-        retentionImpact: result.retentionImpact,
+        retentionImpact,
         ...(audioUrl ? { audioUrl } : {}),
         ...(input.questionId ? { questionId: input.questionId } : {}),
       })
@@ -272,7 +284,7 @@ export async function submitFeynmanEvaluation(
       subConcepts: result.subConcepts,
       misconceptions: result.misconceptions,
       nextPrompt: result.nextPrompt,
-      retentionImpact: result.retentionImpact,
+      retentionImpact,
       updatedNoteState: {
         practiceCount: note.practiceCount + 1,
         lastPracticed: todayStr,

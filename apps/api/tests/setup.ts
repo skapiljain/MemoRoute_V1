@@ -31,7 +31,6 @@ beforeEach(async () => {
     const ports = await import('../src/shared/ports/index.js')
     vi.spyOn(ports, 'createLLMProvider').mockReturnValue({
       evaluateFeynman: vi.fn(async () => ({
-        lectorScore: 85,
         correctness: 80,
         clarity: 90,
         completeness: 85,
@@ -43,7 +42,6 @@ beforeEach(async () => {
         subConcepts: [{ name: 'Core concept', covered: true, score: 85 }],
         misconceptions: [],
         nextPrompt: 'Can you elaborate?',
-        retentionImpact: { intervalDays: 3, reason: 'Good recall' },
       })),
     })
     vi.spyOn(ports, 'createSTTProvider').mockReturnValue({

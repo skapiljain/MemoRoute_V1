@@ -1,11 +1,15 @@
-import type { FeynmanEvaluationResult, SubConceptScore } from './llm-provider.js'
+import type {
+  FeynmanEvaluationAssessment,
+  FeynmanEvaluationResult,
+  SubConceptScore,
+} from './llm-provider.js'
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
 }
 
 function computeLectorScore(correctness: number, clarity: number, completeness: number): number {
-  return Number((correctness * 0.05 + clarity * 0.03 + completeness * 0.02).toFixed(1))
+  return Number(((correctness * 0.5 + clarity * 0.3 + completeness * 0.2) / 10).toFixed(1))
 }
 
 export function buildDefaultSubConcepts(topic: string, missingConcepts: string[]): SubConceptScore[] {
@@ -21,7 +25,7 @@ export function buildDefaultSubConcepts(topic: string, missingConcepts: string[]
 }
 
 export function applyLectorCalibration(
-  result: FeynmanEvaluationResult,
+  result: FeynmanEvaluationAssessment,
   userExplanation: string,
 ): FeynmanEvaluationResult {
   const wordCount = userExplanation.trim().split(/\s+/).filter(Boolean).length
@@ -55,7 +59,7 @@ export function applyLectorCalibration(
   clarity = clamp(Math.round(clarity), 0, 100)
   completeness = clamp(Math.round(completeness), 0, 100)
 
-  const lectorScore = clamp(computeLectorScore(correctness, clarity, completeness), 1, 10)
+  const lectorScore = clamp(computeLectorScore(correctness, clarity, completeness), 0, 10)
 
   return {
     ...result,
@@ -68,12 +72,5 @@ export function applyLectorCalibration(
     nextPrompt:
       result.nextPrompt ||
       `Explain ${result.feedback.missingConcepts[0] ?? 'the core idea'} in simple terms as if teaching a beginner.`,
-    retentionImpact: result.retentionImpact ?? {
-      intervalDays: lectorScore >= 8 ? 5 : lectorScore >= 6 ? 3 : 1,
-      reason:
-        lectorScore >= 8
-          ? 'Strong explanation quality supports a longer review interval.'
-          : 'Gaps detected — an earlier review is recommended.',
-    },
   }
 }

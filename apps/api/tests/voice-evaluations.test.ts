@@ -55,7 +55,6 @@ describe('Voice Evaluations API (Tasks 1, 2, 5, 6, 8)', () => {
       })
       vi.spyOn(ports, 'createLLMProvider').mockReturnValue({
         evaluateFeynman: vi.fn(async () => ({
-          lectorScore: 85,
           correctness: 80,
           clarity: 90,
           completeness: 85,
@@ -67,7 +66,6 @@ describe('Voice Evaluations API (Tasks 1, 2, 5, 6, 8)', () => {
           subConcepts: [{ name: 'Core concept', covered: true, score: 85 }],
           misconceptions: [],
           nextPrompt: 'Can you elaborate?',
-          retentionImpact: { intervalDays: 3, reason: 'Good recall' },
         })),
       })
     }

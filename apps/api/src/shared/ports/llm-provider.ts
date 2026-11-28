@@ -4,13 +4,7 @@ export interface SubConceptScore {
   score: number
 }
 
-export interface RetentionImpact {
-  intervalDays: number
-  reason: string
-}
-
-export interface FeynmanEvaluationResult {
-  lectorScore: number
+export interface FeynmanEvaluationAssessment {
   correctness: number
   clarity: number
   completeness: number
@@ -22,7 +16,11 @@ export interface FeynmanEvaluationResult {
   subConcepts: SubConceptScore[]
   misconceptions: string[]
   nextPrompt: string
-  retentionImpact: RetentionImpact
+}
+
+export interface FeynmanEvaluationResult extends FeynmanEvaluationAssessment {
+  /** Backend-derived 0–10 score used as the scheduler input. */
+  lectorScore: number
 }
 
 export interface FeynmanEvaluationInput {
@@ -32,5 +30,5 @@ export interface FeynmanEvaluationInput {
 }
 
 export interface LLMProvider {
-  evaluateFeynman(input: FeynmanEvaluationInput): Promise<FeynmanEvaluationResult>
+  evaluateFeynman(input: FeynmanEvaluationInput): Promise<FeynmanEvaluationAssessment>
 }

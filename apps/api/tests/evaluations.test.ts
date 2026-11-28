@@ -1,11 +1,14 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { FastifyInstance } from 'fastify'
 import { buildApp } from '../src/app.js'
+import { Evaluation } from '../src/models/Evaluation.js'
 import { PipelineRun } from '../src/models/PipelineRun.js'
 import { submitFeynmanEvaluation } from '../src/modules/evaluations/evaluations.service.js'
 import * as ports from '../src/shared/ports/index.js'
 import { registerTestUser } from './helpers/auth.js'
 import { createTestNote } from './helpers/notes.js'
+import { fromPublicNoteId } from '../src/shared/utils/note-id.js'
+import { fromPublicUserId } from '../src/shared/utils/user-id.js'
 
 describe('Evaluations API (Phase 4)', () => {
   let app: FastifyInstance
@@ -25,7 +28,6 @@ describe('Evaluations API (Phase 4)', () => {
       })
       vi.spyOn(ports, 'createLLMProvider').mockReturnValue({
         evaluateFeynman: vi.fn(async () => ({
-          lectorScore: 85,
           correctness: 80,
           clarity: 90,
           completeness: 85,
@@ -37,7 +39,6 @@ describe('Evaluations API (Phase 4)', () => {
           subConcepts: [{ name: 'Core concept', covered: true, score: 85 }],
           misconceptions: [],
           nextPrompt: 'Can you elaborate?',
-          retentionImpact: { intervalDays: 3, reason: 'Good recall' },
         })),
       })
     }
@@ -67,10 +68,20 @@ describe('Evaluations API (Phase 4)', () => {
     const body = response.json()
     expect(body.evaluationId).toMatch(/^eval_/)
     expect(body.noteId).toBe(note.id)
-    expect(body.lectorScore).toBeGreaterThan(0)
+    expect(body.lectorScore).toBeGreaterThanOrEqual(0)
+    expect(body.lectorScore).toBeLessThanOrEqual(10)
     expect(body.feedback.strengths.length).toBeGreaterThan(0)
     expect(body.updatedNoteState.practiceCount).toBe(1)
     expect(body.updatedNoteState.retentionHealth).toBeGreaterThan(0)
+    expect(body.retentionImpact.intervalDays).toBe(1)
+    expect(body.retentionImpact.reason).toContain('review history')
+
+    const savedEvaluation = await Evaluation.findOne({
+      userId: fromPublicUserId(session.user.id),
+      noteId: fromPublicNoteId(note.id),
+    })
+    expect(savedEvaluation?.lectorScore).toBe(body.lectorScore)
+    expect(savedEvaluation?.retentionImpact?.intervalDays).toBe(body.retentionImpact.intervalDays)
 
     const run = await PipelineRun.findOne({ refId: body.evaluationId })
     expect(run).toBeTruthy()

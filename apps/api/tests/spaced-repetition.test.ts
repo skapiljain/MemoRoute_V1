@@ -66,4 +66,31 @@ describe('SpacedRepetitionService (Phase 5)', () => {
     expect(result.retentionHealth).toBe(91)
     expect(result.repetition).toBe(1)
   })
+
+  it('recalculates the next interval from the updated note state on every evaluation', () => {
+    const scores = { lectorScore: 8.3, correctness: 90, clarity: 80, completeness: 70 }
+    const calendar = { studyMode: 'skill' as const }
+    const referenceDate = new Date('2026-09-18T00:00:00.000Z')
+
+    const first = applyReviewAfterEvaluation(
+      { easinessFactor: 2.5, interval: 0, repetition: 0 },
+      scores,
+      calendar,
+      referenceDate,
+    )
+    const second = applyReviewAfterEvaluation(
+      {
+        easinessFactor: first.easinessFactor,
+        interval: first.interval,
+        repetition: first.repetition,
+      },
+      scores,
+      calendar,
+      referenceDate,
+    )
+
+    expect(first.interval).toBe(1)
+    expect(second.interval).toBe(6)
+    expect(second.nextReviewDate.toISOString().slice(0, 10)).toBe('2026-09-24')
+  })
 })

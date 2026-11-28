@@ -1,5 +1,5 @@
-import type { FeynmanEvaluationInput, FeynmanEvaluationResult, LLMProvider } from './llm-provider.js'
-import { applyLectorCalibration, buildDefaultSubConcepts } from './lector-calibration.service.js'
+import type { FeynmanEvaluationAssessment, FeynmanEvaluationInput, LLMProvider } from './llm-provider.js'
+import { buildDefaultSubConcepts } from './lector-calibration.service.js'
 
 function extractKeywords(text: string): Set<string> {
   return new Set(
@@ -12,7 +12,7 @@ function extractKeywords(text: string): Set<string> {
 }
 
 export class MockLLMProvider implements LLMProvider {
-  async evaluateFeynman(input: FeynmanEvaluationInput): Promise<FeynmanEvaluationResult> {
+  async evaluateFeynman(input: FeynmanEvaluationInput): Promise<FeynmanEvaluationAssessment> {
     const explanation = input.userExplanation.trim()
     const wordCount = explanation.split(/\s+/).filter(Boolean).length
     const sourceKeywords = extractKeywords(input.sourceContent)
@@ -31,8 +31,7 @@ export class MockLLMProvider implements LLMProvider {
           ? ['Several core concepts from the source note were not mentioned']
           : []
 
-    const raw: FeynmanEvaluationResult = {
-      lectorScore: 0,
+    const raw: FeynmanEvaluationAssessment = {
       correctness,
       clarity,
       completeness,
@@ -50,12 +49,8 @@ export class MockLLMProvider implements LLMProvider {
       subConcepts: buildDefaultSubConcepts(input.topic, missingConcepts),
       misconceptions: wordCount < 10 ? ['Explanation too brief to verify understanding'] : [],
       nextPrompt: `Explain the most important idea in "${input.topic}" without using jargon.`,
-      retentionImpact: {
-        intervalDays: completeness >= 80 ? 5 : 2,
-        reason: 'Mock evaluator interval estimate based on completeness.',
-      },
     }
 
-    return applyLectorCalibration(raw, explanation)
+    return raw
   }
 }

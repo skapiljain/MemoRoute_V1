@@ -61,7 +61,11 @@ export function createPaymentProvider(): PaymentProvider {
   }
 }
 
-export type { LLMProvider, FeynmanEvaluationResult } from './llm-provider.js'
+export type {
+  FeynmanEvaluationAssessment,
+  FeynmanEvaluationResult,
+  LLMProvider,
+} from './llm-provider.js'
 export type { STTProvider } from './stt-provider.js'
 export type { NotificationProvider, NotificationPayload } from './notification-provider.js'
 export type { PaymentProvider, CheckoutResult } from './payment-provider.js'
