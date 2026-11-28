@@ -118,6 +118,7 @@ interface NotesContextValue {
   examTargetDate: string
   examTitle: string
   isLoading: boolean
+  refreshError: string | null
   setStudyMode: (mode: StudyModeType, date?: string, title?: string) => void
   activeNoteId: string | null
   setActiveNoteId: (id: string | null) => void
@@ -279,6 +280,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [refreshError, setRefreshError] = useState<string | null>(null)
   const [dashboardStats, setDashboardStats] = useState({
     avgLectorScore: 0,
     totalSessionsToday: 0,
@@ -288,6 +290,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const refreshFromApi = useCallback(async () => {
     if (!apiMode) return
     setIsLoading(true)
+    setRefreshError(null)
     try {
       const [notesData, settings, dates, summary] = await Promise.all([
         fetchNotes(),
@@ -318,6 +321,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       if (notesData.length > 0) {
         setActiveNoteId((current) => current ?? notesData[0].id)
       }
+    } catch (caught) {
+      setRefreshError(caught instanceof Error ? caught.message : 'Could not load your latest study data.')
     } finally {
       setIsLoading(false)
     }
@@ -620,6 +625,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       examTargetDate,
       examTitle,
       isLoading,
+      refreshError,
       setStudyMode,
       activeNoteId,
       setActiveNoteId,
@@ -643,6 +649,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       examTargetDate,
       examTitle,
       isLoading,
+      refreshError,
       setStudyMode,
       activeNoteId,
       addNote,
