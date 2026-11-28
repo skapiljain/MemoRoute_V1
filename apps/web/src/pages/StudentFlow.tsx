@@ -15,10 +15,16 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useNotes } from '../context/NotesContext'
 import { GlassCard } from '../components/GlassCard'
+import { StudentCalendar } from '../components/dashboard/StudentCalendar'
 import { ApiError } from '../lib/api/client'
 import { submitTextEvaluation, submitVoiceEvaluation } from '../lib/api/evaluations.api'
 
-const today = () => new Date().toISOString().slice(0, 10)
+const today = () => {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${now.getFullYear()}-${month}-${day}`
+}
 
 function dateLabel(value: string): string {
   const date = new Date(`${value}T00:00:00`)
@@ -100,7 +106,7 @@ function updateStudyActivity(isDemo: boolean): StudyActivity {
 
 export function StudentDashboard() {
   const { isAuthenticated, user, isDemo } = useAuth()
-  const { notes } = useNotes()
+  const { notes, importantDates, studyMode, examTargetDate, examTitle, isLoading, refreshError, refreshFromApi, addImportantDate } = useNotes()
   const [activity] = useState<StudyActivity>(() => updateStudyActivity(isDemo))
   const due = useMemo(() => notes
     .filter((note) => note.nextReviewDate && note.nextReviewDate.slice(0, 10) <= today())
@@ -147,6 +153,18 @@ export function StudentDashboard() {
         </section>
 
         <p className="mt-5 text-xs text-white/40">{activity.currentStreak} day study streak · {activity.studyDays} total study days</p>
+
+        <StudentCalendar
+          notes={notes}
+          importantDates={importantDates}
+          studyMode={studyMode}
+          examTargetDate={examTargetDate}
+          examTitle={examTitle}
+          isLoading={isLoading}
+          refreshError={refreshError}
+          onRetry={refreshFromApi}
+          addImportantDate={addImportantDate}
+        />
       </main>
     </div>
   )
