@@ -3,42 +3,42 @@
 /* shadcn/ui theme tokens — dark mocha & amber gold theme */
 :root,
 [data-theme='mocha'] {
-  --background: #1e1917;
-  --foreground: #f5efe8;
-  --card: rgba(255, 255, 255, 0.07);
-  --card-foreground: #f5efe8;
-  --muted-foreground: #b3a69a;
-  --border: rgba(255, 255, 255, 0.14);
-  --ring: #e8c89b;
-  --primary: #e8c89b;
-  --primary-foreground: #1e1917;
-  --accent: rgba(232, 200, 155, 0.15);
-  --accent-foreground: #f5efe8;
-  --muted: rgba(255, 255, 255, 0.08);
+  --background: #151719;
+  --foreground: #f3f4f5;
+  --card: #1c1f22;
+  --card-foreground: #f3f4f5;
+  --muted-foreground: #a3a8ad;
+  --border: rgba(255, 255, 255, 0.11);
+  --ring: #d6b477;
+  --primary: #d6b477;
+  --primary-foreground: #211b18;
+  --accent: rgba(214, 180, 119, 0.12);
+  --accent-foreground: #f3f4f5;
+  --muted: rgba(255, 255, 255, 0.05);
   --destructive-foreground: oklch(1 0 0);
-  --page-gradient: linear-gradient(to bottom right, #1e1917, #2a2421, #14100e);
-  --page-solid: #1e1917;
-  --glass-fill: rgba(38, 30, 27, 0.7);
-  --glass-fill-strong: rgba(42, 34, 30, 0.85);
-  --glass-fill-dark: rgba(25, 20, 18, 0.88);
-  --glass-hover-fill: rgba(48, 38, 34, 0.88);
-  --glass-hover-fill-strong: rgba(52, 41, 36, 0.92);
-  --glass-hover-fill-dark: rgba(35, 28, 25, 0.96);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-border-hover: rgba(232, 200, 155, 0.5);
-  --glass-inset: rgba(232, 200, 155, 0.12);
-  --glass-glow: rgba(232, 200, 155, 0.18);
-  --btn-gradient: linear-gradient(135deg, #f5e4c6 0%, #e8c89b 50%, #d4b896 100%);
-  --btn-text: #1e1917;
-  --btn-shadow: rgba(232, 200, 155, 0.35);
-  --btn-shadow-hover: rgba(232, 200, 155, 0.55);
-  --theme-accent: #e8c89b;
-  --theme-accent-muted: rgba(232, 200, 155, 0.15);
-  --theme-accent-border: rgba(232, 200, 155, 0.3);
-  --theme-accent-border-hover: rgba(232, 200, 155, 0.5);
-  --theme-panel: #1d1d1a;
-  --theme-well: #252522;
-  --skeleton-shimmer-mid: rgba(232, 200, 155, 0.12);
+  --page-gradient: #151719;
+  --page-solid: #151719;
+  --glass-fill: #1c1f22;
+  --glass-fill-strong: #202326;
+  --glass-fill-dark: #191c1f;
+  --glass-hover-fill: #232629;
+  --glass-hover-fill-strong: #26292c;
+  --glass-hover-fill-dark: #202326;
+  --glass-border: rgba(255, 255, 255, 0.11);
+  --glass-border-hover: rgba(214, 180, 119, 0.45);
+  --glass-inset: transparent;
+  --glass-glow: transparent;
+  --btn-gradient: #d6b477;
+  --btn-text: #211b18;
+  --btn-shadow: transparent;
+  --btn-shadow-hover: transparent;
+  --theme-accent: #d6b477;
+  --theme-accent-muted: rgba(214, 180, 119, 0.1);
+  --theme-accent-border: rgba(214, 180, 119, 0.25);
+  --theme-accent-border-hover: rgba(214, 180, 119, 0.45);
+  --theme-panel: #1c1f22;
+  --theme-well: #191c1f;
+  --skeleton-shimmer-mid: rgba(214, 180, 119, 0.08);
 }
 
 [data-theme='monochrome'] {
@@ -147,7 +147,7 @@ body {
 
 .theme-page {
   min-height: 100vh;
-  background: var(--page-gradient);
+  background: var(--page-solid);
   color: var(--foreground);
 }
 
@@ -172,32 +172,20 @@ body {
 
 .glass {
   background: var(--glass-fill);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--glass-border);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 var(--glass-inset);
+  box-shadow: none;
 }
 
 .glass-strong {
   background: var(--glass-fill-strong);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--glass-border);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 var(--glass-inset);
+  box-shadow: none;
 }
 
 .glass-dark {
   background: var(--glass-fill-dark);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
-  box-shadow:
-    0 12px 36px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 var(--glass-inset);
+  box-shadow: none;
 }
 
 .glass-hover {
@@ -205,12 +193,9 @@ body {
 }
 
 .glass-hover:hover {
-  transform: translateY(-4px) scale(1.012);
+  transform: none;
   border-color: var(--glass-border-hover);
-  box-shadow:
-    0 20px 48px rgba(0, 0, 0, 0.6),
-    0 0 30px var(--glass-glow),
-    inset 0 1px 0 var(--glass-inset);
+  box-shadow: none;
 }
 
 .glass.glass-hover:hover {
@@ -228,17 +213,12 @@ body {
 .btn-glow {
   background: var(--btn-gradient);
   color: var(--btn-text);
-  box-shadow:
-    0 4px 20px var(--btn-shadow),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  transition: all 0.3s ease;
+  box-shadow: none;
+  transition: background-color 0.2s ease;
 }
 
 .btn-glow:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 32px var(--btn-shadow-hover),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background: #e1c28a;
 }
 
 @keyframes float {

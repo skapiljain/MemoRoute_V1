@@ -4,7 +4,6 @@ import { useAuth } from './context/AuthContext'
 import { AuthProvider } from './context/AuthContext'
 import { NotesProvider } from './context/NotesContext'
 import { SubscriptionProvider } from './context/SubscriptionContext'
-import { ThemeProvider } from './context/ThemeContext'
 import { PageLoader } from './components/ui/page-loader'
 import { Home } from './pages/Home'
 import { Login } from './pages/Login'
@@ -61,16 +60,14 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <SubscriptionProvider>
-          <NotesProvider>
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </NotesProvider>
-        </SubscriptionProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <SubscriptionProvider>
+        <NotesProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </NotesProvider>
+      </SubscriptionProvider>
+    </AuthProvider>
   )
 }

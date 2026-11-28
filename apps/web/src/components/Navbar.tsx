@@ -1,180 +1,66 @@
-import { Brain, Menu, User, X } from 'lucide-react'
+import { BookOpen, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
-import { ThemeToggle } from './ThemeToggle'
-import { ShinyButton } from './ui/shiny-button'
-
-const navLinks = [
-  { label: 'Home', href: '#home' },
-  { label: 'Services', href: '#services' },
-  { label: 'About Us', href: '#about-us' },
-  { label: 'Blog', href: '#blog' },
-  { label: 'Contact', href: '#contact' },
-]
 
 export function Navbar() {
   const [open, setOpen] = useState(false)
-  const { isAuthenticated, logout, user } = useAuth()
-  const { isMonochrome } = useTheme()
+  const { isAuthenticated, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
 
-  const handleNavClick = (href: string) => {
-    setOpen(false)
+  const closeMenu = () => setOpen(false)
+  const showHowItWorks = () => {
+    closeMenu()
     if (!isHome) {
-      navigate('/' + href)
+      navigate('/#how-it-works')
       return
     }
-    const el = document.querySelector(href)
-    el?.scrollIntoView({ behavior: 'smooth' })
+    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
-    <header className="fixed top-0 right-0 left-0 z-50 px-4 pt-4 sm:px-6">
-      <nav className="glass glass-hover mx-auto flex max-w-7xl items-center justify-between rounded-full border border-white/15 px-5 py-3 shadow-2xl backdrop-blur-xl">
-        {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-2.5 text-white group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e8c89b]/15 border border-[#e8c89b]/30 transition group-hover:scale-105">
-            <Brain className="h-5 w-5 text-[#e8c89b]" />
-          </div>
-          <span className="text-lg font-bold tracking-tight text-white">MemoRoute</span>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/8 bg-[#151719]/95 px-4 backdrop-blur-sm sm:px-6">
+      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between" aria-label="Main navigation">
+        <Link to="/" onClick={closeMenu} className="flex items-center gap-2 text-sm font-semibold tracking-tight text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e8c89b]/10 text-[#e8c89b]"><BookOpen className="h-4 w-4" /></span>
+          MemoRoute
         </Link>
-
-        {/* Center Nav Links */}
-        <div className="hidden items-center gap-1 md:flex">
-          {navLinks.map((link) => (
-            <button
-              key={link.label}
-              onClick={() => handleNavClick(link.href)}
-              className="relative rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#f5efe8]/80 transition-colors hover:text-[#e8c89b] hover:bg-[#e8c89b]/15"
-            >
-              {link.label}
-              {link.label === 'Home' && isHome && (
-                <span className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[#e8c89b]" />
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Right User Controls */}
-        <div className="hidden items-center gap-2 lg:gap-3 md:flex">
-          <ThemeToggle />
+        <div className="hidden items-center gap-6 sm:flex">
+          {!isAuthenticated && <button type="button" onClick={showHowItWorks} className="text-sm text-white/65 transition hover:text-white">How it works</button>}
           {isAuthenticated ? (
             <>
-              <Link
-                to="/dashboard"
-                className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#f5efe8]/85 transition hover:text-[#e8c89b] hover:bg-[#e8c89b]/15"
-              >
-                Dashboard
-              </Link>
-              <Link
-                to="/subjects"
-                className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#f5efe8]/85 transition hover:text-[#e8c89b] hover:bg-[#e8c89b]/15"
-              >
-                Subjects &amp; Notes
-              </Link>
-              <Link
-                to="/calendar"
-                className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#e8c89b] transition hover:text-[#e8c89b] hover:bg-[#e8c89b]/15"
-              >
-                Calendar
-              </Link>
-              <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-[#f5efe8]">
-                <User className="h-3.5 w-3.5 text-[#e8c89b]" />
-                <span>{user?.name}</span>
-              </div>
-              <button
-                onClick={logout}
-                className="rounded-full px-3.5 py-1.5 text-xs font-medium text-white/60 transition hover:text-[#e8c89b] hover:bg-[#e8c89b]/15"
-              >
-                Logout
-              </button>
+              <Link to="/student" className="text-sm text-white/65 transition hover:text-white">Home</Link>
+              <Link to="/revisions" className="text-sm text-white/65 transition hover:text-white">Revisions</Link>
+              <Link to="/topics/new" className="text-sm text-white/65 transition hover:text-white">Add topic</Link>
+              <button type="button" onClick={() => void logout()} className="text-sm text-white/50 transition hover:text-white">Sign out</button>
             </>
           ) : (
-            <ShinyButton
-              label="Get Started →"
-              onClick={() => navigate('/login')}
-              accentColor={isMonochrome ? '#ffffff' : '#e8c89b'}
-              accentSoftColor={isMonochrome ? '#f7f7f7' : '#f5efe8'}
-              fillColor={isMonochrome ? '#111111' : '#2b2421'}
-              cornerRadius={9999}
-              className="px-4 py-2 text-xs font-bold"
-            />
+            <Link to="/login" className="rounded-lg bg-[#e8c89b] px-4 py-2 text-sm font-semibold text-[#211b18] transition hover:bg-[#f0d8b6]">Get started</Link>
           )}
         </div>
-
-        {/* Mobile Hamburger */}
-        <button
-          className="rounded-full p-2 text-white md:hidden hover:bg-[#e8c89b]/15"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-        >
+        <button type="button" className="rounded-md p-2 text-white/75 hover:bg-white/5 sm:hidden" onClick={() => setOpen((value) => !value)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open}>
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </nav>
-
-      {/* Mobile Drawer */}
       {open && (
-        <div className="glass mx-auto mt-3 max-w-7xl rounded-3xl border border-white/15 p-4 md:hidden shadow-2xl backdrop-blur-2xl">
-          {navLinks.map((link) => (
-            <button
-              key={link.label}
-              onClick={() => handleNavClick(link.href)}
-              className="block w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-[#f5efe8] hover:bg-[#e8c89b]/15 hover:text-[#e8c89b]"
-            >
-              {link.label}
-            </button>
-          ))}
-          <div className="mt-2 border-t border-white/10 pt-3">
-            <div className="mb-3 px-2">
-              <ThemeToggle className="w-full justify-center" />
+        <div className="mx-auto max-w-6xl border-t border-white/10 py-3 sm:hidden">
+          {isAuthenticated ? (
+            <div className="flex flex-col">
+              <Link to="/student" onClick={closeMenu} className="rounded-md px-3 py-3 text-sm text-white/75 hover:bg-white/5">Home</Link>
+              <Link to="/revisions" onClick={closeMenu} className="rounded-md px-3 py-3 text-sm text-white/75 hover:bg-white/5">Revisions</Link>
+              <Link to="/topics/new" onClick={closeMenu} className="rounded-md px-3 py-3 text-sm text-white/75 hover:bg-white/5">Add topic</Link>
+              <button type="button" onClick={() => { closeMenu(); void logout() }} className="rounded-md px-3 py-3 text-left text-sm text-white/50 hover:bg-white/5">Sign out</button>
             </div>
-            {isAuthenticated ? (
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 px-4 py-2 text-xs text-[#e8c89b]">
-                  <User className="h-4 w-4" />
-                  <span>Logged in as {user?.name}</span>
-                </div>
-                <Link
-                  to="/dashboard"
-                  className="block rounded-xl px-4 py-2.5 text-sm font-medium text-[#f5efe8] hover:bg-[#e8c89b]/15 hover:text-[#e8c89b]"
-                  onClick={() => setOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to="/subjects"
-                  className="block rounded-xl px-4 py-2.5 text-sm font-medium text-[#e8c89b] hover:bg-[#e8c89b]/15 hover:text-[#e8c89b]"
-                  onClick={() => setOpen(false)}
-                >
-                  Subjects &amp; Notes
-                </Link>
-                <button
-                  onClick={() => {
-                    logout()
-                    setOpen(false)
-                  }}
-                  className="block w-full rounded-xl px-4 py-2.5 text-left text-sm font-medium text-white/60 hover:text-[#e8c89b] hover:bg-[#e8c89b]/15"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                className="btn-glow mt-2 block rounded-full px-4 py-3 text-center text-sm font-bold shadow-md"
-                onClick={() => setOpen(false)}
-              >
-                Get Started →
-              </Link>
-            )}
-          </div>
+          ) : (
+            <div className="flex flex-col gap-1">
+              <button type="button" onClick={showHowItWorks} className="rounded-md px-3 py-3 text-left text-sm text-white/75 hover:bg-white/5">How it works</button>
+              <Link to="/login" onClick={closeMenu} className="rounded-md px-3 py-3 text-sm font-semibold text-[#e8c89b] hover:bg-white/5">Get started</Link>
+            </div>
+          )}
         </div>
       )}
     </header>
   )
 }
-

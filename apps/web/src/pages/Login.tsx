@@ -3,8 +3,6 @@ import { ArrowRight, Brain, Eye, EyeOff, Lock, Mail, Sparkles, User } from 'luci
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { ThemeToggle } from '../components/ThemeToggle'
-import { ShinyButton } from '../components/ui/shiny-button'
 
 export function Login() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -40,23 +38,12 @@ export function Login() {
   }
 
   return (
-    <div className="theme-page relative flex min-h-screen items-center justify-center overflow-hidden px-4">
-      <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
-        <ThemeToggle />
-      </div>
-      <div
-        className="theme-glow-radial absolute inset-0 opacity-30 pointer-events-none"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 30% 40%, rgba(232,200,155,0.2) 0%, transparent 50%)',
-        }}
-      />
-
+    <div className="theme-page flex min-h-screen items-center justify-center px-4 py-10">
       <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="glass-strong relative z-10 w-full max-w-md rounded-[2rem] p-8 sm:p-10"
+        transition={{ duration: 0.2 }}
+        className="glass-strong w-full max-w-md rounded-xl p-6 sm:p-8"
       >
         <Link to="/" className="mb-8 flex items-center justify-center gap-2 text-white">
           <Brain className="h-7 w-7 text-gold-soft" />
@@ -80,7 +67,7 @@ export function Login() {
                 loginDemo()
                 navigate('/student', { replace: true })
               }}
-              className="group flex w-full items-center justify-between rounded-2xl border border-[#e8c89b]/40 bg-[#e8c89b]/12 px-5 py-4 text-left transition hover:border-[#e8c89b]/70 hover:bg-[#e8c89b]/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8c89b]"
+              className="group flex w-full items-center justify-between rounded-lg border border-[#e8c89b]/25 bg-[#e8c89b]/[0.06] px-4 py-3.5 text-left transition hover:border-[#e8c89b]/50 hover:bg-[#e8c89b]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8c89b]"
             >
               <span className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e8c89b]/20 text-[#e8c89b]">
@@ -105,7 +92,7 @@ export function Login() {
           {mode === 'register' && (
             <div>
               <label className="mb-2 block text-sm font-medium text-white/80">Name</label>
-              <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
+              <div className="glass flex items-center gap-3 rounded-lg px-4 py-3">
                 <User className="h-4 w-4 text-white/50" />
                 <input
                   type="text"
@@ -120,7 +107,7 @@ export function Login() {
 
           <div>
             <label className="mb-2 block text-sm font-medium text-white/80">Email</label>
-            <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
+            <div className="glass flex items-center gap-3 rounded-lg px-4 py-3">
               <Mail className="h-4 w-4 text-white/50" />
               <input
                 type="email"
@@ -134,7 +121,7 @@ export function Login() {
 
           <div>
             <label className="mb-2 block text-sm font-medium text-white/80">Password</label>
-            <div className="glass flex items-center gap-3 rounded-2xl px-4 py-3">
+            <div className="glass flex items-center gap-3 rounded-lg px-4 py-3">
               <Lock className="h-4 w-4 text-white/50" />
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -155,15 +142,9 @@ export function Login() {
 
           {error && <p className="text-center text-sm text-red-300">{error}</p>}
 
-          <ShinyButton
-            type="submit"
-            label={submitting ? 'Please wait…' : mode === 'login' ? 'Sign In →' : 'Create Account →'}
-            accentColor="#e8c89b"
-            accentSoftColor="#f5efe8"
-            fillColor="#2b2421"
-            cornerRadius={9999}
-            className="w-full py-3.5 text-sm font-semibold"
-          />
+          <button type="submit" disabled={submitting} className="w-full rounded-lg bg-[#e8c89b] px-5 py-3.5 text-sm font-semibold text-[#211b18] transition hover:bg-[#f0d8b6] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8c89b]">
+            {submitting ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
+          </button>
         </form>
 
         <button
